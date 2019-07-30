@@ -47,6 +47,11 @@ include(CheckCCompilerFlag)
 
 project(CURL C)
 
+if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+  include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+  conan_basic_setup()
+endif()
+
 message(WARNING "the curl cmake build system is poorly maintained. Be aware")
 
 file(READ ${CURL_SOURCE_DIR}/include/curl/curlver.h CURL_VERSION_H_CONTENTS)
@@ -92,7 +97,7 @@ option(ENABLE_CURLDEBUG "Set to ON to build with TrackMemory feature enabled" OF
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
   if(PICKY_COMPILER)
-    foreach(_CCOPT -pedantic -Wall -W -Wpointer-arith -Wwrite-strings -Wunused -Wshadow -Winline -Wnested-externs -Wmissing-declarations -Wmissing-prototypes -Wno-long-long -Wfloat-equal -Wno-multichar -Wsign-compare -Wundef -Wno-format-nonliteral -Wendif-labels -Wstrict-prototypes -Wdeclaration-after-statement -Wstrict-aliasing=3 -Wcast-align -Wtype-limits -Wold-style-declaration -Wmissing-parameter-type -Wempty-body -Wclobbered -Wignored-qualifiers -Wconversion -Wno-sign-conversion -Wvla -Wdouble-promotion -Wno-system-headers -Wno-pedantic-ms-format)
+    foreach(_CCOPT -fPIC -pedantic -Wall -W -Wpointer-arith -Wwrite-strings -Wunused -Wshadow -Winline -Wnested-externs -Wmissing-declarations -Wmissing-prototypes -Wno-long-long -Wfloat-equal -Wno-multichar -Wsign-compare -Wundef -Wno-format-nonliteral -Wendif-labels -Wstrict-prototypes -Wdeclaration-after-statement -Wstrict-aliasing=3 -Wcast-align -Wtype-limits -Wold-style-declaration -Wmissing-parameter-type -Wempty-body -Wclobbered -Wignored-qualifiers -Wconversion -Wno-sign-conversion -Wvla -Wdouble-promotion -Wno-system-headers -Wno-pedantic-ms-format)
       # surprisingly, CHECK_C_COMPILER_FLAG needs a new variable to store each new
       # test result in.
       check_c_compiler_flag(${_CCOPT} OPT${_CCOPT})
@@ -359,11 +364,17 @@ if(CMAKE_USE_OPENSSL)
   if(NOT CMAKE_VERSION VERSION_LESS 3.4)
     list(APPEND CURL_LIBS OpenSSL::SSL OpenSSL::Crypto)
   else()
-    list(APPEND CURL_LIBS ${OPENSSL_LIBRARIES})
-    include_directories(${OPENSSL_INCLUDE_DIR})
+    if(EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+      list(APPEND CURL_LIBS ${CONAN_LIB_DIRS_OPENSSL})
+      include_directories(${CONAN_INCLUDE_DIRS_OPENSSL})
+      set(CMAKE_REQUIRED_INCLUDES ${CONAN_INCLUDE_DIRS_OPENSSL})
+    else()
+      list(APPEND CURL_LIBS ${OPENSSL_LIBRARIES})
+      include_directories(${OPENSSL_INCLUDE_DIR})
+      set(CMAKE_REQUIRED_INCLUDES ${OPENSSL_INCLUDE_DIR})
+    endif()
   endif()
 
-  set(CMAKE_REQUIRED_INCLUDES ${OPENSSL_INCLUDE_DIR})
   check_include_file("openssl/crypto.h" HAVE_OPENSSL_CRYPTO_H)
   check_include_file("openssl/err.h"    HAVE_OPENSSL_ERR_H)
   check_include_file("openssl/pem.h"    HAVE_OPENSSL_PEM_H)
@@ -972,6 +983,8 @@ foreach(CURL_TEST
     HAVE_INET_NTOA_R_DECL_REENTRANT
     HAVE_GETADDRINFO
     HAVE_FILE_OFFSET_BITS
+    HAVE_VARIADIC_MACROS_C99
+    HAVE_VARIADIC_MACROS_GCC
     )
   curl_internal_test(${CURL_TEST})
 endforeach()
@@ -1133,7 +1146,7 @@ if(CURL_WERROR)
 endif()
 
 # Ugly (but functional) way to include "Makefile.inc" by transforming it (= regenerate it).
-function(TRANSFORM_MAKEFILE_INC INPUT_FILE OUTPUT_FILE)
+function(transform_makefile_inc INPUT_FILE OUTPUT_FILE)
   file(READ ${INPUT_FILE} MAKEFILE_INC_TEXT)
   string(REPLACE "$(top_srcdir)"   "\${CURL_SOURCE_DIR}" MAKEFILE_INC_TEXT ${MAKEFILE_INC_TEXT})
   string(REPLACE "$(top_builddir)" "\${CURL_BINARY_DIR}" MAKEFILE_INC_TEXT ${MAKEFILE_INC_TEXT})
@@ -1255,9 +1268,9 @@ set(CPPFLAG_CURL_STATICLIB  "")
 set(CURLVERSION             "${CURL_VERSION}")
 if(BUILD_SHARED_LIBS)
   set(ENABLE_SHARED         "yes")
-  set(ENABLE_STATIC         "no")
+  set(ENABLE_STATIC         "yes")
 else()
-  set(ENABLE_SHARED         "no")
+  set(ENABLE_SHARED         "yes")
   set(ENABLE_STATIC         "yes")
 endif()
 set(exec_prefix             "\${prefix}")
