@@ -3,14 +3,14 @@ from conans import ConanFile, CMake, tools
 
 class CurllibConan(ConanFile):
     name = "curl"
-    version = "0.1"
+    version = "0.0.1"
     license = "<Put the package license here>"
     author = "<Put your name here> <And your email here>"
     url = "<Package recipe repository url here, for issues about the package>"
-    description = "<Description of Elearcommonlib here>"
+    description = "conan file to build package for curl"
     topics = ("<Put some tag here>", "<here>", "<and here>")
     settings = "os", "compiler", "build_type", "arch"
-    requires="openssl/0.1@jenkins/master"
+    requires = "openssl/0.0.1@jenkins/master"
     options = {"shared": [True, False]}
     default_options = "shared=False","openssl:no_asm=True"
     generators = "cmake"
@@ -22,15 +22,11 @@ class CurllibConan(ConanFile):
             cmake.definitions[ "Platform" ] = "android"
         cmake.configure(source_folder=".")
         cmake.build()
-        #autotools = AutoToolsBuildEnvironment(self)
-        #self.run("cd .. && autoreconf -fsi ")
-        #autotools.configure(configure_dir="..",args=["--prefix=${PWD}"])
-        #autotools.make()
-        #autotools.install()
+        cmake.install()
 
     def package(self):
-        self.copy("*.h", dst="include", src="include")
-        self.copy("*.a", dst="lib", src="lib", keep_path=False)
+        self.copy("*.h", dst="include/curl", src="package/include/curl")
+        self.copy("*", dst="lib", src="lib", keep_path=False)
 
     def package_info(self):
         self.cpp_info.libs = [ "curl" ]
