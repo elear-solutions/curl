@@ -21,7 +21,7 @@ class CurllibConan(ConanFile):
         autotools.install()
 
     def package(self):
-        self.copy("*.h", dst="include/curl", src="package/include/curl")
+        self.copy("*.h", dst="include", src="package/include/curl/include")
         self.copy("*", dst="lib", src="package/lib/lib", keep_path=False)
 
     def package_info(self):
