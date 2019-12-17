@@ -1,3 +1,5 @@
+import os
+import fnmatch
 from conans import ConanFile, AutoToolsBuildEnvironment, tools
 
 class CurllibConan(ConanFile):
@@ -65,6 +67,13 @@ class CurllibConan(ConanFile):
     default_options ['with_zlib'] = True
     generators = "make"
 
+    @property
+    def _targets(self):
+        return {
+            "iOS-x86-*": "i386-apple-ios",
+            "iOS-x86_64-*": "x86_64-apple-ios"
+        }
+
     def configure(self):
         args = ["--prefix=${PWD}"]
         args.append("--enable-ares") if self.options.with_ares else args.append("--disable-ares")
@@ -113,7 +122,12 @@ class CurllibConan(ConanFile):
         autotools = AutoToolsBuildEnvironment(self)
         self.run("cd .. && autoreconf -fsi ")
         args = self.configure()
-        autotools.configure(configure_dir= "..",args= args)
+        query = "%s-%s-%s" % (self.settings.os, self.settings.arch, self.settings.compiler)
+        ancestor = next((self._targets[i] for i in self._targets if fnmatch.fnmatch(query, i)), None)
+        if not ancestor:
+            autotools.configure(configure_dir= "..",args= args)
+        else:
+            autotools.configure(configure_dir= "..",args= args, host=ancestor)
         autotools.make()
         autotools.install()
 
