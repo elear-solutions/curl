@@ -19,6 +19,7 @@ class CurllibConan(ConanFile):
         'with_libidn': [True, False],
         'with_librtmp': [True, False],
         'with_libmetalink': [True, False],
+        'with_ares': [True, False],
         'with_http': [True, False],
         'with_ftp': [True, False],
         'with_file': [True, False],
@@ -66,6 +67,7 @@ class CurllibConan(ConanFile):
 
     def configure(self):
         args = ["--prefix=${PWD}"]
+        args.append("--enable-ares") if self.options.with_ares else args.append("--disable-ares")
         args.append("--enable-http") if self.options.with_http else args.append("--disable-http")
         args.append("--enable-ftp") if self.options.with_ftp else args.append("--disable-ftp")
         args.append("--enable-file") if self.options.with_file else args.append("--disable-file")
@@ -116,8 +118,8 @@ class CurllibConan(ConanFile):
         autotools.install()
 
     def package(self):
-        self.copy("*.h", dst="include", src="package/include/curl/include")
-        self.copy("*", dst="lib", src="package/lib", keep_path=False)
+        self.copy("*.h", dst= "include", src= "include/curl/include")
+        self.copy("*", dst= "lib", src= "lib/lib", keep_path= False)
 
     def package_info(self):
         self.cpp_info.libs = [ "curl" ]
