@@ -104,11 +104,11 @@ class CurllibConan(ConanFile):
         args.append("--enable-threaded-resolver") if self.options.with_threaded_resolver else args.append("--disable-threaded-resolver")
         args.append("--enable-pthread") if self.options.with_pthread else args.append("--disable-pthread")
         args.append("--enable-cookies") if self.options.with_cookies else args.append("--disable-cookies")
-        args.append("--with-zlib") if self.options.with_zlib else args.append("--without-zlib")
+        # args.append("--with-zlib") if self.options.with_zlib else args.append("--without-zlib")
         args.append("--with-brotli") if self.options.with_brotli else args.append("--without-brotli")
         args.append("--with-winssl") if self.options.with_winssl else args.append("--without-winssl")
         args.append("--with-darwinssl") if self.options.with_darwinssl else args.append("--without-darwinssl")
-        args.append("--with-ssl") if self.options.with_ssl else args.append("--without-ssl")
+        # args.append("--with-ssl") if self.options.with_ssl else args.append("--without-ssl")
         args.append("--with-gnutls") if self.options.with_gnutls else args.append("--without-gnutls")
         args.append("--with-polarssl") if self.options.with_polarssl else args.append("--without-polarssl")
         args.append("--with-mbedtls") if self.options.with_mbedtls else args.append("--without-mbedtls")
@@ -126,10 +126,22 @@ class CurllibConan(ConanFile):
         return args
 
     def build(self):
-        if self.options.with_openssl:
-            self.requires.add("openssl/0.0.1@jenkins/master", private= False)
         autotools = AutoToolsBuildEnvironment(self)
+        # print(self.deps_cpp_info["openssl"].rootpath)
+        # print(self.deps_cpp_info["openssl"].include_paths)
+        # print(self.deps_cpp_info["openssl"].lib_paths)
+        # print(self.deps_cpp_info["openssl"].bin_paths)
+        # print(self.deps_cpp_info["openssl"].libs)
+        # print(self.deps_cpp_info["openssl"].defines)
+        # print(self.deps_cpp_info["openssl"].cflags)
+        # print(self.deps_cpp_info["openssl"].cppflags)
+        # print(self.deps_cpp_info["openssl"].sharedlinkflags)
+        # print(self.deps_cpp_info["openssl"].exelinkflags)
         args = self.config_options()
+        if self.options.with_openssl and (not self.options.with_darwinssl and not self.options.with_winssl ):
+            self.requires.add("openssl/0.0.1@jenkins/master", private= False)
+            args.append("--with-ssl={!s}".format(self.deps_cpp_info["openssl"].rootpath))
+        args.append("--with-zlib={!s}".format(self.deps_cpp_info["z"].rootpath)) if self.options.with_zlib else args.append("--without-zlib")
         query = "%s-%s-%s" % (self.settings.os, self.settings.arch, self.settings.compiler)
         ancestor = next((self._targets[i] for i in self._targets if fnmatch.fnmatch(query, i)), None)
         if not ancestor:
