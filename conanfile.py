@@ -67,6 +67,7 @@ class CurllibConan(ConanFile):
     default_options ['openssl:no_asm'] = True
     default_options ['with_zlib'] = True
     default_options ['with_openssl'] = True
+    default_options ['with_ssl'] = True
     default_options ['with_cookies'] = True
     default_options ['with_ipv6'] = True
     default_options ['with_crypto_auth'] = True
@@ -125,6 +126,8 @@ class CurllibConan(ConanFile):
         return args
 
     def build(self):
+        if self.options.with_openssl:
+            self.requires.add("openssl/0.0.1@jenkins/master", private= False)
         autotools = AutoToolsBuildEnvironment(self)
         args = self.config_options()
         query = "%s-%s-%s" % (self.settings.os, self.settings.arch, self.settings.compiler)
