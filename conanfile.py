@@ -141,7 +141,7 @@ class CurllibConan(ConanFile):
         if self.options.with_openssl and (not self.options.with_darwinssl and not self.options.with_winssl ):
             self.requires.add("openssl/0.0.1@jenkins/master", private= False)
             args.append("--with-ssl={!s}".format(self.deps_cpp_info["openssl"].rootpath))
-        args.append("--with-zlib={!s}".format(self.deps_cpp_info["z"].rootpath)) if self.options.with_zlib else args.append("--without-zlib")
+        args.append("--with-zlib={!s}".format(self.deps_cpp_info["zlib"].rootpath)) if self.options.with_zlib else args.append("--without-zlib")
         query = "%s-%s-%s" % (self.settings.os, self.settings.arch, self.settings.compiler)
         ancestor = next((self._targets[i] for i in self._targets if fnmatch.fnmatch(query, i)), None)
         if not ancestor:
