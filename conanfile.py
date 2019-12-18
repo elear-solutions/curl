@@ -1,6 +1,6 @@
 import os
 import fnmatch
-from conans import ConanFile, AutoToolsBuildEnvironment, tools
+from conans import ConanFile, AutoToolsBuildEnvironment, CMake, tools
 
 class CurllibConan(ConanFile):
     name = "curl"
@@ -66,11 +66,11 @@ class CurllibConan(ConanFile):
     default_options = {key: False for key in options.keys()}
     default_options ['openssl:no_asm'] = True
     default_options ['with_zlib'] = True
-    default_options ['with_ssl'] = True
+    default_options ['with_openssl'] = True
     default_options ['with_cookies'] = True
     default_options ['with_ipv6'] = True
     default_options ['with_crypto_auth'] = True
-    generators = "make"
+    generators = "cmake", "txt"
 
     @property
     def _targets(self):
@@ -79,7 +79,7 @@ class CurllibConan(ConanFile):
             "iOS-x86_64-*": "x86_64-apple-ios"
         }
 
-    def configure(self):
+    def config_options(self):
         args = ["--prefix=${PWD}"]
         args.append("--enable-ares") if self.options.with_ares else args.append("--disable-ares")
         args.append("--enable-http") if self.options.with_http else args.append("--disable-http")
@@ -126,14 +126,13 @@ class CurllibConan(ConanFile):
 
     def build(self):
         autotools = AutoToolsBuildEnvironment(self)
-        self.run("cd .. && autoreconf -fsi ")
-        args = self.configure()
+        args = self.config_options()
         query = "%s-%s-%s" % (self.settings.os, self.settings.arch, self.settings.compiler)
         ancestor = next((self._targets[i] for i in self._targets if fnmatch.fnmatch(query, i)), None)
         if not ancestor:
-            autotools.configure(configure_dir= "..",args= args)
+            autotools.configure(configure_dir= "..",args= args, use_default_install_dirs=True)
         else:
-            autotools.configure(configure_dir= "..",args= args, host=ancestor)
+            autotools.configure(configure_dir= "..",args= args, use_default_install_dirs=True, host= ancestor)
         autotools.make()
         autotools.install()
 
