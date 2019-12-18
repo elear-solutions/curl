@@ -60,11 +60,16 @@ class CurllibConan(ConanFile):
         'with_rtmp': [True, False],
         'with_winidn': [True, False],
         'with_libidn2': [True, False],
-        'with_nghttp2': [True, False]
+        'with_nghttp2': [True, False],
+        'with_crypto_auth': [True, False]
         }
     default_options = {key: False for key in options.keys()}
     default_options ['openssl:no_asm'] = True
     default_options ['with_zlib'] = True
+    default_options ['with_ssl'] = True
+    default_options ['with_cookies'] = True
+    default_options ['with_ipv6'] = True
+    default_options ['with_crypto_auth'] = True
     generators = "make"
 
     @property
@@ -116,6 +121,7 @@ class CurllibConan(ConanFile):
         args.append("--with-winidn") if self.options.with_winidn else args.append("--without-winidn")
         args.append("--with-libidn2") if self.options.with_libidn2 else args.append("--without-libidn2")
         args.append("--with-nghttp2") if self.options.with_nghttp2 else args.append("--without-nghttp2")
+        args.append("--enable-crypto_auth") if self.options.with_crypto_auth else args.append("--disable-crypto-auth")
         return args
 
     def build(self):
