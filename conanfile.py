@@ -6,9 +6,9 @@ class CurllibConan(ConanFile):
     name = "curl"
     license = "<Put the package license here>"
     author = "<Put your name here> <And your email here>"
-    url = "<Package recipe repository url here, for issues about the package>"
+    url = "https://github.com/elear-solutions/curl"
     description = "conan file to build package for curl"
-    topics = ("<Put some tag here>", "<here>", "<and here>")
+    topics = ("curl", "http", "requests")
     settings = "os", "compiler", "build_type", "arch"
     requires = "openssl/0.0.1@jenkins/master"
     options = {
@@ -126,7 +126,6 @@ class CurllibConan(ConanFile):
         return args
 
     def build(self):
-        autotools = AutoToolsBuildEnvironment(self)
         # print(self.deps_cpp_info["openssl"].rootpath)
         # print(self.deps_cpp_info["openssl"].include_paths)
         # print(self.deps_cpp_info["openssl"].lib_paths)
@@ -137,6 +136,8 @@ class CurllibConan(ConanFile):
         # print(self.deps_cpp_info["openssl"].cppflags)
         # print(self.deps_cpp_info["openssl"].sharedlinkflags)
         # print(self.deps_cpp_info["openssl"].exelinkflags)
+        autotools = AutoToolsBuildEnvironment(self)
+        self.run("cd .. && autoreconf -fsi")
         args = self.config_options()
         if self.options.with_openssl and (not self.options.with_darwinssl and not self.options.with_winssl ):
             self.requires.add("openssl/0.0.1@jenkins/master", private= False)
