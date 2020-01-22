@@ -4,6 +4,7 @@ from conans import ConanFile, AutoToolsBuildEnvironment, CMake, tools
 
 class CurllibConan(ConanFile):
     name = "curl"
+    version = "7.63.0"
     license = "<Put the package license here>"
     author = "<Put your name here> <And your email here>"
     url = "https://github.com/elear-solutions/curl"
