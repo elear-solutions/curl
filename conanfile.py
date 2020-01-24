@@ -11,7 +11,7 @@ class CurllibConan(ConanFile):
     description = "conan file to build package for curl"
     topics = ("curl", "http", "requests")
     settings = "os", "compiler", "build_type", "arch"
-    requires = "openssl/0.0.1@jenkins/master"
+    requires = "OpenSSL/1.0.2r@jenkins/master"
     options = {
         "shared": [True, False],
         'with_openssl': [True, False],
@@ -159,3 +159,4 @@ class CurllibConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = [ "curl" ]
+
