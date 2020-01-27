@@ -75,6 +75,17 @@ class CurllibConan(ConanFile):
     default_options ['with_crypto_auth'] = True
     default_options ['with_rtsp'] = True
     default_options ['with_threaded_resolver'] = True
+    default_options ['with_http'] = True
+    default_options ['with_smb'] = True
+    default_options ['with_dict'] = True
+    default_options ['with_ftp'] = True
+    default_options ['with_file'] = True
+    default_options ['with_tftp'] = True
+    default_options ['with_smtp'] = True
+    default_options ['with_gopher'] = True
+    default_options ['with_pop3'] = True
+    default_options ['with_imap'] = True
+
     generators = "cmake", "txt"
 
     @property
