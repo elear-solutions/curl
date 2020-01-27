@@ -85,6 +85,7 @@ class CurllibConan(ConanFile):
     default_options ['with_gopher'] = True
     default_options ['with_pop3'] = True
     default_options ['with_imap'] = True
+    default_options ['with_telnet'] = True
 
     generators = "cmake", "txt"
 
