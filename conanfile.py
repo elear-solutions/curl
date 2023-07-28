@@ -97,7 +97,7 @@ class CurllibConan(ConanFile):
         }
 
     def config_options(self):
-        args = ["--prefix=${PWD}"]
+        args = ["--prefix=${PWD}", "--with-pic"]
         args.append("--enable-ares") if self.options.with_ares else args.append("--disable-ares")
         args.append("--enable-http") if self.options.with_http else args.append("--disable-http")
         args.append("--enable-ftp") if self.options.with_ftp else args.append("--disable-ftp")
