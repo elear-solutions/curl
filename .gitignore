@@ -57,3 +57,35 @@ curl_fuzzer
 curl_fuzzer_seed_corpus.zip
 libstandaloneengine.a
 .checksrc
+
+# Conan generated files
+conan.lock
+conanbuildinfo.cmake
+conanbuildinfo.txt
+conaninfo.txt
+graph_info.json
+
+# Build artifacts
+bin/
+lib/lib/
+lib/*.tmp*
+lib/stamp-h1
+lib/curl_config.h
+lib/libcurl.vers
+lib/xc_*.tmp
+src/bin/
+src/curl
+include/curl/include/
+
+# Generated documentation
+docs/libcurl/opts/share/
+docs/libcurl/share/
+docs/share/
+tests/configurehelp.pm
+
+# Generated libtool m4 files (created by libtoolize)
+m4/libtool.m4
+m4/ltoptions.m4
+m4/ltsugar.m4
+m4/ltversion.m4
+m4/lt~obsolete.m4

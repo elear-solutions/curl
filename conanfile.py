@@ -11,7 +11,6 @@ class CurllibConan(ConanFile):
     description = "conan file to build package for curl"
     topics = ("curl", "http", "requests")
     settings = "os", "compiler", "build_type", "arch"
-    requires = "OpenSSL/1.0.2r@jenkins/master"
     options = {
         "shared": [True, False],
         'with_openssl': [True, False],
@@ -89,6 +88,23 @@ class CurllibConan(ConanFile):
 
     generators = "cmake", "txt"
 
+    def requirements(self):
+        default_user = "jenkins"
+        default_channel = "master"
+        
+        # Use same user/channel as this package if specified
+        if self.user and self.channel:
+            default_user = self.user
+            default_channel = self.channel
+        
+        # Always require OpenSSL when with_openssl is enabled
+        if self.options.with_openssl:
+            self.requires("OpenSSL/1.0.2r@%s/%s" % (default_user, default_channel))
+        
+        # Require zlib when with_zlib is enabled
+        if self.options.with_zlib:
+            self.requires("zlib/1.2.11@%s/%s" % (default_user, default_channel))
+
     @property
     def _targets(self):
         return {
@@ -140,6 +156,9 @@ class CurllibConan(ConanFile):
         args.append("--with-libidn2") if self.options.with_libidn2 else args.append("--without-libidn2")
         args.append("--with-nghttp2") if self.options.with_nghttp2 else args.append("--without-nghttp2")
         args.append("--enable-manual") if self.options.with_manual else args.append("--disable-manual")
+        # Explicitly disable libpsl to avoid undefined references when linking
+        # curl will be built without PSL support, making it fully self-contained
+        args.append("--without-libpsl")
         return args
 
     def build(self):
@@ -154,18 +173,22 @@ class CurllibConan(ConanFile):
         # print(self.deps_cpp_info["openssl"].sharedlinkflags)
         # print(self.deps_cpp_info["openssl"].exelinkflags)
         autotools = AutoToolsBuildEnvironment(self)
+        # Run autoreconf in the source directory (where configure.ac is located)
+        # When using -bf=build, the build folder is a subdirectory, so we need to go up one level
         self.run("cd .. && autoreconf -fsi")
         args = self.config_options()
         if self.options.with_openssl and (not self.options.with_darwinssl and not self.options.with_winssl ):
-            self.requires.add("OpenSSL/1.0.2r@jenkins/master", private= False)
             args.append("--with-ssl={!s}".format(self.deps_cpp_info["OpenSSL"].rootpath))
-        args.append("--with-zlib={!s}".format(self.deps_cpp_info["zlib"].rootpath)) if self.options.with_zlib else args.append("--without-zlib")
+        if self.options.with_zlib:
+            args.append("--with-zlib={!s}".format(self.deps_cpp_info["zlib"].rootpath))
+        else:
+            args.append("--without-zlib")
         query = "%s-%s-%s" % (self.settings.os, self.settings.arch, self.settings.compiler)
         ancestor = next((self._targets[i] for i in self._targets if fnmatch.fnmatch(query, i)), None)
         if not ancestor:
-            autotools.configure(configure_dir= "..",args= args, use_default_install_dirs=True)
+            autotools.configure(configure_dir="..", args=args, use_default_install_dirs=True)
         else:
-            autotools.configure(configure_dir= "..",args= args, use_default_install_dirs=True, host= ancestor)
+            autotools.configure(configure_dir="..", args=args, use_default_install_dirs=True, host=ancestor)
         autotools.make()
         autotools.install()
 
