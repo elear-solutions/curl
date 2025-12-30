@@ -88,22 +88,31 @@ class CurllibConan(ConanFile):
 
     generators = "cmake", "txt"
 
-    def requirements(self):
-        default_user = "jenkins"
-        default_channel = "master"
+    def _get_install_channel(self):
+        """
+        Get dependency channel with fallback logic.
         
-        # Use same user/channel as this package if specified
-        if self.user and self.channel:
-            default_user = self.user
-            default_channel = self.channel
+        Priority:
+        1. INSTALL_CHANNEL environment variable (explicit override - any channel)
+        2. 'master' (production default)
+        """
+        install_channel = os.getenv('INSTALL_CHANNEL')
+        if install_channel:
+            return install_channel
+        
+        return 'master'
+
+    def requirements(self):
+        default_user = getattr(self, 'user', 'jenkins')
+        install_channel = self._get_install_channel()
         
         # Always require OpenSSL when with_openssl is enabled
         if self.options.with_openssl:
-            self.requires("OpenSSL/1.0.2r@%s/%s" % (default_user, default_channel))
+            self.requires("OpenSSL/1.0.2r@%s/%s" % (default_user, install_channel))
         
         # Require zlib when with_zlib is enabled
         if self.options.with_zlib:
-            self.requires("zlib/1.2.11@%s/%s" % (default_user, default_channel))
+            self.requires("zlib/1.2.11@%s/%s" % (default_user, install_channel))
 
     @property
     def _targets(self):
